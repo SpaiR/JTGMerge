@@ -8,7 +8,7 @@
     <packaging>jar</packaging>
 
     <name>${project.groupId}:${project.artifactId}</name>
-    <description>Java mapmerge tool for BYOND maps with TGM format support.</description>
+    <description>Cli-based app for BYOND .dmm files with TGM support.</description>
     <url>https://spair.github.io/JTGMerge</url>
 
     <licenses>
@@ -26,6 +26,11 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>info.picocli</groupId>
+            <artifactId>picocli</artifactId>
+            <version>3.5.2</version>
+        </dependency>
         <dependency>
             <groupId>io.github.spair</groupId>
             <artifactId>dmm-io</artifactId>
