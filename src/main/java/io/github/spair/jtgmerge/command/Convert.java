@@ -20,7 +20,7 @@ public class Convert implements Runnable {
     @Parameters(index = "0", paramLabel = "MAP_FILE", description = "map file to convert")
     private File mapFile;
 
-    @Option(names = {"-f", "--format"}, description = "format to which you want to convert (accepts: tgm / byond)")
+    @Option(names = {"-f", "--format"}, description = "format to convert to (accepts: tgm / byond)")
     private String format;
 
     @Override

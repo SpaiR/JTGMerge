@@ -8,7 +8,7 @@
     <packaging>jar</packaging>
 
     <name>${project.groupId}:${project.artifactId}</name>
-    <description>Cli-based app for BYOND .dmm files with TGM support.</description>
+    <description>CLI-based app for .dmm files to improve mapping experience.</description>
     <url>https://spair.github.io/JTGMerge</url>
 
     <licenses>

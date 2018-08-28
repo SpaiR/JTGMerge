@@ -16,19 +16,20 @@ import java.util.concurrent.Callable;
 
 @Command(
         name = "merge",
-        description = "Attempts to merge two maps which originate from the same map, but have different changes.")
+        description = "Attempts to merge locally modified map with map from remote branch."
+                    + "Provides interactive conflict resolving.")
 public class Merge implements Callable<Integer> {
 
     private static final Integer SUCCESS = 0;
     private static final Integer FAIL = 1;
 
-    @Parameters(index = "0", paramLabel = "ORIGIN", description = "file with origin map")
+    @Parameters(index = "0", paramLabel = "ORIGIN", description = "file with origin map (map before local changes)")
     private File origin;
 
-    @Parameters(index = "1", paramLabel = "LOCAL", description = "file with local map")
+    @Parameters(index = "1", paramLabel = "LOCAL", description = "file with local map (map after local changes)")
     private File local;
 
-    @Parameters(index = "2", paramLabel = "REMOTE", description = "file with remote map")
+    @Parameters(index = "2", paramLabel = "REMOTE", description = "file with remote map (map from remote brunch)")
     private File remote;
 
     private DmmData originDmmData;
@@ -64,9 +65,9 @@ public class Merge implements Callable<Integer> {
                 val localTileContent = localDmmData.getTileContentByLocation(location);
                 val remoteTileContent = remoteDmmData.getTileContentByLocation(location);
 
-                val originMatchesLocal = (originTileContent == null) ? (localTileContent == null) : originTileContent.equals(localTileContent);
-                val originMatchesRemote = (originTileContent == null) ? (remoteTileContent == null) : originTileContent.equals(remoteTileContent);
-                val remoteMatchesLocal = (remoteTileContent == null) ? (localTileContent == null) : remoteTileContent.equals(localTileContent);
+                val originMatchesLocal = compareTileContents(originTileContent, localTileContent);
+                val originMatchesRemote = compareTileContents(originTileContent, remoteTileContent);
+                val remoteMatchesLocal = compareTileContents(remoteTileContent, localTileContent);
 
                 String key = null;
                 TileContent tileContent = null;
@@ -86,7 +87,7 @@ public class Merge implements Callable<Integer> {
                         case 0:
                             System.exit(FAIL);
                         default:
-                            System.out.println("Incorrect conflict resolution mode! Aborting operation.");
+                            System.out.println("Incorrect conflict resolution mode! Aborting.");
                             System.exit(FAIL);
                     }
                 } else if (!originMatchesLocal) {
@@ -136,6 +137,10 @@ public class Merge implements Callable<Integer> {
         resultDmmData.setMaxX(localDmmData.getMaxX());
         resultDmmData.setMaxY(localDmmData.getMaxY());
         resultDmmData.setTgm(localDmmData.isTgm());
+    }
+
+    private boolean compareTileContents(final TileContent tc1, final TileContent tc2) {
+        return tc1 == null ? tc2 == null : tc1.equals(tc2);
     }
 
     private int readResolveMode() {

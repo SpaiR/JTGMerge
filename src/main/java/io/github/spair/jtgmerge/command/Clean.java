@@ -9,6 +9,7 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
 import java.io.File;
+import java.util.HashSet;
 import java.util.Set;
 
 import static picocli.CommandLine.Command;
@@ -44,6 +45,7 @@ public class Clean implements Runnable {
     private DmmData modifiedDmmData;
     private DmmData outputDmmData;
 
+    private Set<String> unusedKeys;
     private int keyGeneratorCurrentId;
 
     @Override
@@ -57,10 +59,14 @@ public class Clean implements Runnable {
         originalDmmData = DmmReader.readMap(original);
         modifiedDmmData = DmmReader.readMap(modified);
 
+        if (originalDmmData.getKeyLength() != modifiedDmmData.getKeyLength()) {
+            throw new RuntimeException("Key length of original and new map differs.");
+        }
+
         initOutputDmmData();
 
-        val unusedKeys = fillMapWithReusedKeys();
-        fillRemainingTiles(unusedKeys);
+        fillMapWithReusedKeys();
+        fillRemainingTiles();
 
         if (tgm) {
             DmmWriter.saveAsTGM(output, outputDmmData);
@@ -72,21 +78,16 @@ public class Clean implements Runnable {
     }
 
     private void initOutputDmmData() {
-        if (originalDmmData.getKeyLength() != modifiedDmmData.getKeyLength()) {
-            throw new RuntimeException("Key length of original and new map differs.");
-        }
-
         outputDmmData = new DmmData();
         outputDmmData.setMaxX(modifiedDmmData.getMaxX());
         outputDmmData.setMaxY(modifiedDmmData.getMaxY());
         outputDmmData.setKeyLength(modifiedDmmData.getKeyLength());
 
+        unusedKeys = new HashSet<>(originalDmmData.getTileContentsByKey().keySet());
         keyGeneratorCurrentId = (int) Math.pow(validKeyElements.length, outputDmmData.getKeyLength() - 1);
     }
 
-    private Set<String> fillMapWithReusedKeys() {
-        val unusedKeys = originalDmmData.getTileContentsByKey().keySet();
-
+    private void fillMapWithReusedKeys() {
         for (int x = 1; x <= outputDmmData.getMaxX(); x++) {
             for (int y = 1; y <= outputDmmData.getMaxY(); y++) {
                 val location = TileLocation.of(x, y);
@@ -102,11 +103,9 @@ public class Clean implements Runnable {
                 outputDmmData.addTileContentByLocation(location, newTileContent);
             }
         }
-
-        return unusedKeys;
     }
 
-    private void fillRemainingTiles(final Set<String> unusedKeys) {
+    private void fillRemainingTiles() {
         for (int x = 1; x <= outputDmmData.getMaxX(); x++) {
             for (int y = 1; y <= outputDmmData.getMaxY(); y++) {
                 val newTileContent = modifiedDmmData.getTileContentByLocation(TileLocation.of(x, y));
