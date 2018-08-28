@@ -14,7 +14,7 @@ import java.util.Set;
 import static picocli.CommandLine.Command;
 
 @Command(name = "clean", description = "Cleans a map after changes have been made.")
-public class CleanMap implements Runnable {
+public class Clean implements Runnable {
 
     @Parameters(index = "0", paramLabel = "ORIGINAL", description = "file with original map")
     private File original;
@@ -48,15 +48,16 @@ public class CleanMap implements Runnable {
 
     @Override
     public void run() {
-        System.out.println(
-                String.format("Cleaning map '%s', tgm format is %s", modified.getName(), tgm ? "enabled" : "disabled")
-        );
+        System.out.printf("Cleaning map '%s', tgm format is %s\n", modified.getName(), tgm ? "enabled" : "disabled");
 
         if (output == null) {
             output = modified;
         }
 
-        initDmmData();
+        originalDmmData = DmmReader.readMap(original);
+        modifiedDmmData = DmmReader.readMap(modified);
+
+        initOutputDmmData();
 
         val unusedKeys = fillMapWithReusedKeys();
         fillRemainingTiles(unusedKeys);
@@ -67,15 +68,10 @@ public class CleanMap implements Runnable {
             DmmWriter.saveAsByond(output, outputDmmData);
         }
 
-        System.out.println(
-                String.format("Map '%s' successfully cleaned, output path: %s", modified.getName(), output.getPath())
-        );
+        System.out.printf("Map '%s' successfully cleaned, output path: %s\n", modified.getName(), output.getPath());
     }
 
-    private void initDmmData() {
-        originalDmmData = DmmReader.readMap(original);
-        modifiedDmmData = DmmReader.readMap(modified);
-
+    private void initOutputDmmData() {
         if (originalDmmData.getKeyLength() != modifiedDmmData.getKeyLength()) {
             throw new RuntimeException("Key length of original and new map differs.");
         }
@@ -97,7 +93,7 @@ public class CleanMap implements Runnable {
                 val newTileContent = modifiedDmmData.getTileContentByLocation(location);
                 val originalKey = originalDmmData.getKeyByTileContent(newTileContent);
 
-                if (outputDmmData.getKeyByTileContent(newTileContent) == null && originalKey != null) {
+                if (!outputDmmData.hasKeyByTileContent(newTileContent) && originalKey != null) {
                     outputDmmData.addKeyByTileContent(newTileContent, originalKey);
                     outputDmmData.addTileContentByKey(originalKey, newTileContent);
                     unusedKeys.remove(originalKey);
@@ -113,9 +109,9 @@ public class CleanMap implements Runnable {
     private void fillRemainingTiles(final Set<String> unusedKeys) {
         for (int x = 1; x <= outputDmmData.getMaxX(); x++) {
             for (int y = 1; y <= outputDmmData.getMaxY(); y++) {
-                val tileContent = modifiedDmmData.getTileContentByLocation(TileLocation.of(x, y));
+                val newTileContent = modifiedDmmData.getTileContentByLocation(TileLocation.of(x, y));
 
-                if (outputDmmData.getKeyByTileContent(tileContent) == null) {
+                if (!outputDmmData.hasKeyByTileContent(newTileContent)) {
                     String key;
 
                     if (unusedKeys.isEmpty()) {
@@ -126,8 +122,8 @@ public class CleanMap implements Runnable {
                         it.remove();
                     }
 
-                    outputDmmData.addKeyByTileContent(tileContent, key);
-                    outputDmmData.addTileContentByKey(key, tileContent);
+                    outputDmmData.addKeyByTileContent(newTileContent, key);
+                    outputDmmData.addTileContentByKey(key, newTileContent);
                 }
             }
         }

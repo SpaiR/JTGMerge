@@ -12,7 +12,7 @@ import java.io.File;
 @Command(
         name = "convert",
         description = "Converts map to TGM or to initial BYOND format, or changes the format to the opposite.")
-public class ConvertMap implements Runnable {
+public class Convert implements Runnable {
 
     private static final String TGM = "tgm";
     private static final String BYOND = "byond";
@@ -31,7 +31,7 @@ public class ConvertMap implements Runnable {
             format = dmmData.isTgm() ? BYOND : TGM;
         }
 
-        System.out.println(String.format("Converting '%s' to '%s'", mapFile.getName(), format));
+        System.out.printf("Converting '%s' to '%s'\n", mapFile.getName(), format);
 
         if (TGM.equalsIgnoreCase(format)) {
             DmmWriter.saveAsTGM(mapFile, dmmData);
@@ -39,6 +39,6 @@ public class ConvertMap implements Runnable {
             DmmWriter.saveAsByond(mapFile, dmmData);
         }
 
-        System.out.println(String.format("Map '%s' successfully converted to '%s'", mapFile.getName(), format));
+        System.out.printf("Map '%s' successfully converted to '%s'\n", mapFile.getName(), format);
     }
 }
