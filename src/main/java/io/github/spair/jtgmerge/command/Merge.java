@@ -12,16 +12,12 @@ import picocli.CommandLine.Parameters;
 import java.io.File;
 import java.util.InputMismatchException;
 import java.util.Scanner;
-import java.util.concurrent.Callable;
 
 @Command(
         name = "merge",
         description = "Attempts to merge locally modified map with map from remote branch."
                     + "Provides interactive conflict resolving.")
-public class Merge implements Callable<Integer> {
-
-    private static final Integer SUCCESS = 0;
-    private static final Integer FAIL = 1;
+public class Merge implements Runnable {
 
     @Parameters(index = "0", paramLabel = "ORIGIN", description = "file with origin map (map before local changes)")
     private File origin;
@@ -40,19 +36,21 @@ public class Merge implements Callable<Integer> {
     private Scanner in = new Scanner(System.in);
 
     @Override
-    public Integer call() {
+    public void run() {
+        System.out.println("Map merging in process...");
+
         originDmmData = DmmReader.readMap(origin);
         localDmmData = DmmReader.readMap(local);
         remoteDmmData = DmmReader.readMap(remote);
 
         if (differMapSizes()) {
-            System.out.println("ERROR: Map sizes differ. Unable to merge. Aborting.");
-            return FAIL;
+            System.out.println("ERROR: Map sizes differ. Unable to merge. Aborting!");
+            System.exit(1);
         }
 
         if (differKeyLength()) {
-            System.out.println("ERROR: Map key lengths differ. Unable to merge. Aborting.");
-            return FAIL;
+            System.out.println("ERROR: Map key lengths differ. Unable to merge. Aborting!");
+            System.exit(1);
         }
 
         initResultDmmData();
@@ -73,22 +71,34 @@ public class Merge implements Callable<Integer> {
                 TileContent tileContent = null;
 
                 if (!originMatchesLocal && !originMatchesRemote && !remoteMatchesLocal) {
-                    System.out.printf("CONFLICT: X=%d, Y=%d\n", x, y);
+                    System.out.println(
+                            "==== CONFLICT ====\n"
+                           + "X: " + x + " Y: " + y + "\n"
+                           + "--- Local\n"
+                           + "Key: " + localDmmData.getKeyByTileContent(localTileContent) + '\n'
+                           + "Content: " + localTileContent + '\n'
+                           + "--- Remote\n"
+                           + "Key: " + remoteDmmData.getKeyByTileContent(remoteTileContent) + '\n'
+                           + "Content: " + remoteTileContent
+                    );
 
                     switch (readResolveMode()) {
                         case 1:
                             key = localDmmData.getKeyByTileContent(localTileContent);
                             tileContent = localTileContent;
+                            System.out.println("Local version is used");
                             break;
                         case 2:
                             key = remoteDmmData.getKeyByTileContent(remoteTileContent);
                             tileContent = remoteTileContent;
+                            System.out.println("Remote version is used");
                             break;
                         case 0:
-                            System.exit(FAIL);
+                            System.out.println("Aborted by user");
+                            System.exit(2);
                         default:
-                            System.out.println("Incorrect conflict resolution mode! Aborting.");
-                            System.exit(FAIL);
+                            System.out.println("ERROR: Incorrect conflict resolution mode. Aborting!");
+                            System.exit(1);
                     }
                 } else if (!originMatchesLocal) {
                     key = localDmmData.getKeyByTileContent(localTileContent);
@@ -113,7 +123,7 @@ public class Merge implements Callable<Integer> {
             DmmWriter.saveAsByond(local, resultDmmData);
         }
 
-        return SUCCESS;
+        System.out.println("Map merging successfully finished");
     }
 
     private boolean differMapSizes() {
@@ -145,8 +155,8 @@ public class Merge implements Callable<Integer> {
 
     private int readResolveMode() {
         System.out.println(
-                "A conflict has been detected. Please specify which version should be used (example: 1)\n"
-              + " 1 - local\n 2 - remote\n 0 - abort"
+                "Please specify which version should be used by number (example: 1)"
+              + "\n 1 - local\n 2 - remote\n 0 - abort"
         );
 
         while (true) {

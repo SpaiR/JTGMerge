@@ -60,7 +60,8 @@ public class Clean implements Runnable {
         modifiedDmmData = DmmReader.readMap(modified);
 
         if (originalDmmData.getKeyLength() != modifiedDmmData.getKeyLength()) {
-            throw new RuntimeException("Key length of original and new map differs.");
+            System.out.println("ERROR: Key length of original and new map differs");
+            System.exit(1);
         }
 
         initOutputDmmData();
@@ -149,7 +150,8 @@ public class Clean implements Runnable {
             if (generatedKey.length() == outputDmmData.getKeyLength()) {
                 return generatedKey.toString();
             } else {
-                throw new RuntimeException("Generated key is outside of bounds.");
+                System.out.println("ERROR: Generated key is outside of bounds.=");
+                System.exit(1);
             }
         }
     }

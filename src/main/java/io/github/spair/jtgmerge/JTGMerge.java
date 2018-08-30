@@ -3,11 +3,8 @@ package io.github.spair.jtgmerge;
 import io.github.spair.jtgmerge.command.Clean;
 import io.github.spair.jtgmerge.command.Convert;
 import io.github.spair.jtgmerge.command.Merge;
-import lombok.val;
 import picocli.CommandLine;
 import picocli.CommandLine.RunLast;
-
-import java.util.Optional;
 
 import static picocli.CommandLine.Command;
 
@@ -28,8 +25,7 @@ public class JTGMerge implements Runnable {
 
     public static void main(final String[] args) {
         CMD = new CommandLine(new JTGMerge());
-        val results = CMD.parseWithHandlers(new RunLast(), CommandLine.defaultExceptionHandler().andExit(1), args);
-        System.exit(results == null ? 0 : (int) Optional.ofNullable(results.get(0)).orElse(0));
+        CMD.parseWithHandlers(new RunLast().andExit(0), CommandLine.defaultExceptionHandler().andExit(1), args);
     }
 
     @Override
