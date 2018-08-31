@@ -9,8 +9,9 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
 import java.io.File;
-import java.util.HashSet;
 import java.util.Set;
+import java.util.HashSet;
+import java.util.Arrays;
 
 import static picocli.CommandLine.Command;
 
@@ -34,6 +35,12 @@ public class Clean implements Runnable {
             description = "result will be saved in TGM format (default: ${DEFAULT-VALUE})",
             arity = "1")
     private boolean tgm = true;
+
+    @Option(
+            names = {"-S", "--sanitize"},
+            description = "variables to remove from every object on the map",
+            arity = "0..*")
+    private String[] sanitizeVars = {};
 
     private final String[] validKeyElements = {
             "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t",
@@ -65,6 +72,7 @@ public class Clean implements Runnable {
         }
 
         initOutputDmmData();
+        sanitizeVars();
 
         fillMapWithReusedKeys();
         fillRemainingTiles();
@@ -75,7 +83,7 @@ public class Clean implements Runnable {
             DmmWriter.saveAsByond(output, outputDmmData);
         }
 
-        System.out.printf("Map '%s' successfully cleaned, output path: %s\n", modified.getName(), output.getPath());
+        System.out.printf("Map '%s' successfully cleaned, output path: '%s'\n", modified.getName(), output.getPath());
     }
 
     private void initOutputDmmData() {
@@ -150,9 +158,28 @@ public class Clean implements Runnable {
             if (generatedKey.length() == outputDmmData.getKeyLength()) {
                 return generatedKey.toString();
             } else {
-                System.out.println("ERROR: Generated key is outside of bounds.=");
+                System.out.println("ERROR: Generated key is outside of bounds");
                 System.exit(1);
             }
+        }
+    }
+
+    private void sanitizeVars() {
+        for (val sanitizeVar : sanitizeVars) {
+            for (val tileContent : new HashSet<>(modifiedDmmData.getKeysByTileContent().keySet())) {
+                val key = modifiedDmmData.getKeysByTileContent().remove(tileContent);
+                tileContent.forEach(tileObject -> tileObject.getVars().remove(sanitizeVar));
+
+                if (modifiedDmmData.hasKeyByTileContent(tileContent)) {
+                    modifiedDmmData.getTileContentsByKey().remove(key);
+                } else {
+                    modifiedDmmData.addKeyByTileContent(tileContent, key);
+                }
+            }
+        }
+
+        if (sanitizeVars.length > 0) {
+            System.out.println("Sanitized variables: " + Arrays.toString(sanitizeVars));
         }
     }
 }
