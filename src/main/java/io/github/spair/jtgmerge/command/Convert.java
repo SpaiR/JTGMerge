@@ -12,6 +12,7 @@ import java.io.File;
 @Command(
         name = "convert",
         description = "Converts map to TGM or to initial BYOND format, or changes the format to the opposite.")
+@SuppressWarnings("unused")
 public class Convert implements Runnable {
 
     private static final String TGM = "tgm";
@@ -20,7 +21,7 @@ public class Convert implements Runnable {
     @Parameters(index = "0", paramLabel = "MAP_FILE", description = "map file to convert")
     private File mapFile;
 
-    @Option(names = {"-f", "--format"}, description = "format to convert to (accepts: tgm / byond)")
+    @Option(names = {"-f", "--format"}, description = "format to convert to (accepts 'tgm' or 'byond' as value)")
     private String format;
 
     @Override

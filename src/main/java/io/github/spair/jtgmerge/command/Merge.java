@@ -17,6 +17,7 @@ import java.util.Scanner;
         name = "merge",
         description = "Attempts to merge locally modified map with map from remote branch."
                     + "Provides interactive conflict resolving.")
+@SuppressWarnings("unused")
 public class Merge implements Runnable {
 
     @Parameters(index = "0", paramLabel = "ORIGIN", description = "file with origin map (map before local changes)")
@@ -155,7 +156,7 @@ public class Merge implements Runnable {
 
     private int readResolveMode() {
         System.out.println(
-                "Please specify which version should be used by number (example: 1)"
+                "Please select number of version which should be used:"
               + "\n 1 - local\n 2 - remote\n 0 - abort"
         );
 

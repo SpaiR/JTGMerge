@@ -16,6 +16,7 @@ import java.util.Arrays;
 import static picocli.CommandLine.Command;
 
 @Command(name = "clean", description = "Cleans a map after changes have been made.")
+@SuppressWarnings({"FieldCanBeLocal", "unused", "MismatchedReadAndWriteOfArray"})
 public class Clean implements Runnable {
 
     @Parameters(index = "0", paramLabel = "ORIGINAL", description = "file with original map")
@@ -42,10 +43,10 @@ public class Clean implements Runnable {
             arity = "0..*")
     private String[] sanitizeVars = {};
 
-    private final String[] validKeyElements = {
-            "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t",
-            "u", "v", "w", "x", "y", "z", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N",
-            "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"
+    private final char[] validKeyElements = {
+            'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
+            'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N',
+            'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
     };
 
     private DmmData originalDmmData;
@@ -92,7 +93,7 @@ public class Clean implements Runnable {
         outputDmmData.setMaxY(modifiedDmmData.getMaxY());
         outputDmmData.setKeyLength(modifiedDmmData.getKeyLength());
 
-        unusedKeys = new HashSet<>(originalDmmData.getTileContentsByKey().keySet());
+        unusedKeys = originalDmmData.getTileContentsByKey().keySet();
         keyGeneratorCurrentId = (int) Math.pow(validKeyElements.length, outputDmmData.getKeyLength() - 1);
     }
 
