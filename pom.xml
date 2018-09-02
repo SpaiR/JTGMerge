@@ -106,7 +106,6 @@
                             <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
                         </manifest>
                         <manifestEntries>
-                            <License>MIT-License</License>
                             <Built-By>${user.name}</Built-By>
                         </manifestEntries>
                     </archive>

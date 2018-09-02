@@ -32,7 +32,7 @@ so this feature is redundant and just would add unneeded complexity to the app.
 
 ## How To Use
 
-The only requirement for usage is to have installed Java at least 8 version or more.<br>
+The only requirement for usage is to have installed Java at least 8 version or higher.<br>
 Usage example: `java -jar JTGMerge.jar clean originalMap.dmm backupMap.dmm outputMap.dmm --tgm false`
 
 Commands guide is built in, so just use `-h, --help` option.
