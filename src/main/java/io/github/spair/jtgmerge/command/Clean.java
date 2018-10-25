@@ -116,19 +116,30 @@ public class Clean implements Runnable {
     }
 
     private void fillRemainingTiles() {
-        for (int x = 1; x <= outputDmmData.getMaxX(); x++) {
-            for (int y = 1; y <= outputDmmData.getMaxY(); y++) {
-                val newTileContent = modifiedDmmData.getTileContentByLocation(TileLocation.of(x, y));
+        for (int y = outputDmmData.getMaxY(); y > 0; y--) {
+            for (int x = 1; x <= outputDmmData.getMaxX(); x++) {
+                val location = TileLocation.of(x, y);
+                val newTileContent = modifiedDmmData.getTileContentByLocation(location);
 
                 if (!outputDmmData.hasKeyByTileContent(newTileContent)) {
-                    String key;
+                    String key = null;
 
                     if (unusedKeys.isEmpty()) {
                         key = generateNewKey();
                     } else {
-                        val it = unusedKeys.iterator();
-                        key = it.next();
-                        it.remove();
+                        for (val unusedKey : unusedKeys) {
+                            if (originalDmmData.getKeyByLocation(location).equals(unusedKey)) {
+                                key = unusedKey;
+                                unusedKeys.remove(key);
+                                break;
+                            }
+                        }
+
+                        if (key == null) {
+                            val it = unusedKeys.iterator();
+                            key = it.next();
+                            it.remove();
+                        }
                     }
 
                     outputDmmData.addKeyByTileContent(newTileContent, key);
