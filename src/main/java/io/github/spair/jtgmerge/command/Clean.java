@@ -4,6 +4,7 @@ import io.github.spair.dmm.io.DmmData;
 import io.github.spair.dmm.io.TileLocation;
 import io.github.spair.dmm.io.reader.DmmReader;
 import io.github.spair.dmm.io.writer.DmmWriter;
+import io.github.spair.jtgmerge.util.KeyGenerator;
 import lombok.val;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
@@ -43,18 +44,12 @@ public class Clean implements Runnable {
             arity = "0..*")
     private String[] sanitizeVars = {};
 
-    private final char[] validKeyElements = {
-            'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
-            'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N',
-            'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
-    };
-
     private DmmData originalDmmData;
     private DmmData modifiedDmmData;
     private DmmData outputDmmData;
 
     private Set<String> unusedKeys;
-    private int keyGeneratorCurrentId;
+    private KeyGenerator keyGenerator;
 
     @Override
     public void run() {
@@ -93,8 +88,8 @@ public class Clean implements Runnable {
         outputDmmData.setMaxY(modifiedDmmData.getMaxY());
         outputDmmData.setKeyLength(modifiedDmmData.getKeyLength());
 
-        unusedKeys = originalDmmData.getTileContentsByKey().keySet();
-        keyGeneratorCurrentId = (int) Math.pow(validKeyElements.length, outputDmmData.getKeyLength() - 1);
+        unusedKeys = originalDmmData.getKeys();
+        keyGenerator = new KeyGenerator(outputDmmData);
     }
 
     private void fillMapWithReusedKeys() {
@@ -105,8 +100,7 @@ public class Clean implements Runnable {
                 val originalKey = originalDmmData.getKeyByTileContent(newTileContent);
 
                 if (!outputDmmData.hasKeyByTileContent(newTileContent) && originalKey != null) {
-                    outputDmmData.addKeyByTileContent(newTileContent, originalKey);
-                    outputDmmData.addTileContentByKey(originalKey, newTileContent);
+                    outputDmmData.addKeyAndTileContent(originalKey, newTileContent);
                     unusedKeys.remove(originalKey);
                 }
 
@@ -125,7 +119,7 @@ public class Clean implements Runnable {
                     String key = null;
 
                     if (unusedKeys.isEmpty()) {
-                        key = generateNewKey();
+                        key = keyGenerator.createKey();
                     } else {
                         for (val unusedKey : unusedKeys) {
                             if (originalDmmData.getKeyByLocation(location).equals(unusedKey)) {
@@ -142,36 +136,8 @@ public class Clean implements Runnable {
                         }
                     }
 
-                    outputDmmData.addKeyByTileContent(newTileContent, key);
-                    outputDmmData.addTileContentByKey(key, newTileContent);
+                    outputDmmData.addKeyAndTileContent(key, newTileContent);
                 }
-            }
-        }
-    }
-
-    private String generateNewKey() {
-        while (true) {
-            int localId = keyGeneratorCurrentId++;
-            val generatedKey = new StringBuilder();
-
-            while (localId >= validKeyElements.length) {
-                int i = localId % validKeyElements.length;
-                generatedKey.insert(0, validKeyElements[i]);
-                localId -= i;
-                localId /= validKeyElements.length;
-            }
-
-            generatedKey.append(validKeyElements[localId]);
-
-            if (outputDmmData.getTileContentByKey(generatedKey.toString()) != null) {
-                continue;
-            }
-
-            if (generatedKey.length() == outputDmmData.getKeyLength()) {
-                return generatedKey.toString();
-            } else {
-                System.out.println("ERROR: Generated key is outside of bounds");
-                System.exit(1);
             }
         }
     }
@@ -179,11 +145,11 @@ public class Clean implements Runnable {
     private void sanitizeVars() {
         for (val sanitizeVar : sanitizeVars) {
             for (val tileContent : new HashSet<>(modifiedDmmData.getKeysByTileContent().keySet())) {
-                val key = modifiedDmmData.getKeysByTileContent().remove(tileContent);
-                tileContent.forEach(tileObject -> tileObject.getVars().remove(sanitizeVar));
+                val key = modifiedDmmData.removeKeyByTileContent(tileContent);
+                tileContent.forEach(tileObject -> tileObject.removeVar(sanitizeVar));
 
                 if (modifiedDmmData.hasKeyByTileContent(tileContent)) {
-                    modifiedDmmData.getTileContentsByKey().remove(key);
+                    modifiedDmmData.removeTileContentByKey(key);
                 } else {
                     modifiedDmmData.addKeyByTileContent(tileContent, key);
                 }
