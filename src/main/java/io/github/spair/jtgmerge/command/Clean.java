@@ -68,6 +68,10 @@ public class Clean implements Runnable {
         }
 
         initOutputDmmData();
+
+        unusedKeys = new HashSet<>(originalDmmData.getKeys());
+        keyGenerator = new KeyGenerator(outputDmmData);
+
         sanitizeVars();
 
         fillMapWithReusedKeys();
@@ -87,9 +91,6 @@ public class Clean implements Runnable {
         outputDmmData.setMaxX(modifiedDmmData.getMaxX());
         outputDmmData.setMaxY(modifiedDmmData.getMaxY());
         outputDmmData.setKeyLength(modifiedDmmData.getKeyLength());
-
-        unusedKeys = originalDmmData.getKeys();
-        keyGenerator = new KeyGenerator(outputDmmData);
     }
 
     private void fillMapWithReusedKeys() {
@@ -113,9 +114,9 @@ public class Clean implements Runnable {
         for (int y = outputDmmData.getMaxY(); y > 0; y--) {
             for (int x = 1; x <= outputDmmData.getMaxX(); x++) {
                 val location = TileLocation.of(x, y);
-                val newTileContent = modifiedDmmData.getTileContentByLocation(location);
+                val tileContent = modifiedDmmData.getTileContentByLocation(location);
 
-                if (!outputDmmData.hasKeyByTileContent(newTileContent)) {
+                if (!outputDmmData.hasKeyByTileContent(tileContent)) {
                     String key = null;
 
                     if (unusedKeys.isEmpty()) {
@@ -136,7 +137,7 @@ public class Clean implements Runnable {
                         }
                     }
 
-                    outputDmmData.addKeyAndTileContent(key, newTileContent);
+                    outputDmmData.addKeyAndTileContent(key, tileContent);
                 }
             }
         }

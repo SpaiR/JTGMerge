@@ -5,18 +5,20 @@ import io.github.spair.dmm.io.TileContent;
 import io.github.spair.dmm.io.TileLocation;
 import io.github.spair.dmm.io.reader.DmmReader;
 import io.github.spair.dmm.io.writer.DmmWriter;
+import io.github.spair.jtgmerge.util.KeyGenerator;
 import lombok.val;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
 
 import java.io.File;
+import java.util.HashSet;
 import java.util.InputMismatchException;
 import java.util.Scanner;
+import java.util.Set;
 
 @Command(
         name = "merge",
-        description = "Attempts to merge locally modified map with map from remote branch."
-                    + "Provides interactive conflict resolving.")
+        description = "Attempts to merge locally modified map with map from remote branch. Provides interactive conflict resolving.")
 @SuppressWarnings("unused")
 public class Merge implements Runnable {
 
@@ -35,6 +37,7 @@ public class Merge implements Runnable {
     private DmmData resultDmmData;
 
     private Scanner in = new Scanner(System.in);
+    private Set<TileContent> contentWithoutKeys = new HashSet<>();
 
     @Override
     public void run() {
@@ -55,68 +58,8 @@ public class Merge implements Runnable {
         }
 
         initResultDmmData();
-
-        for (int x = 1; x <= originDmmData.getMaxX(); x++) {
-            for (int y = 1; y <= originDmmData.getMaxY(); y++) {
-                val location = TileLocation.of(x, y);
-
-                val originTileContent = originDmmData.getTileContentByLocation(location);
-                val localTileContent = localDmmData.getTileContentByLocation(location);
-                val remoteTileContent = remoteDmmData.getTileContentByLocation(location);
-
-                val originMatchesLocal = compareTileContents(originTileContent, localTileContent);
-                val originMatchesRemote = compareTileContents(originTileContent, remoteTileContent);
-                val remoteMatchesLocal = compareTileContents(remoteTileContent, localTileContent);
-
-                String key = null;
-                TileContent tileContent = null;
-
-                if (!originMatchesLocal && !originMatchesRemote && !remoteMatchesLocal) {
-                    System.out.println(
-                            "==== CONFLICT ====\n"
-                           + "X: " + x + " Y: " + y + "\n"
-                           + "--- Local\n"
-                           + "Key: " + localDmmData.getKeyByTileContent(localTileContent) + '\n'
-                           + "Content: " + localTileContent + '\n'
-                           + "--- Remote\n"
-                           + "Key: " + remoteDmmData.getKeyByTileContent(remoteTileContent) + '\n'
-                           + "Content: " + remoteTileContent
-                    );
-
-                    switch (readResolveMode()) {
-                        case 1:
-                            key = localDmmData.getKeyByTileContent(localTileContent);
-                            tileContent = localTileContent;
-                            System.out.println("Local version is used");
-                            break;
-                        case 2:
-                            key = remoteDmmData.getKeyByTileContent(remoteTileContent);
-                            tileContent = remoteTileContent;
-                            System.out.println("Remote version is used");
-                            break;
-                        case 0:
-                            System.out.println("Aborted by user");
-                            System.exit(2);
-                        default:
-                            System.out.println("ERROR: Incorrect conflict resolution mode. Aborting!");
-                            System.exit(1);
-                    }
-                } else if (!originMatchesLocal) {
-                    key = localDmmData.getKeyByTileContent(localTileContent);
-                    tileContent = localTileContent;
-                } else if (!originMatchesRemote) {
-                    key = remoteDmmData.getKeyByTileContent(remoteTileContent);
-                    tileContent = remoteTileContent;
-                } else {
-                    key = originDmmData.getKeyByTileContent(originTileContent);
-                    tileContent = originTileContent;
-                }
-
-                resultDmmData.addTileContentByLocation(location, tileContent);
-                resultDmmData.addTileContentByKey(key, tileContent);
-                resultDmmData.addKeyByTileContent(tileContent, key);
-            }
-        }
+        fillMapWithContent();
+        spreadContentWithoutKeys();
 
         if (resultDmmData.isTgm()) {
             DmmWriter.saveAsTGM(local, resultDmmData);
@@ -150,16 +93,87 @@ public class Merge implements Runnable {
         resultDmmData.setTgm(localDmmData.isTgm());
     }
 
+    private void fillMapWithContent() {
+        for (int x = 1; x <= originDmmData.getMaxX(); x++) {
+            for (int y = 1; y <= originDmmData.getMaxY(); y++) {
+                val location = TileLocation.of(x, y);
+
+                val localKey = localDmmData.getKeyByLocation(location);
+                val remoteKey = remoteDmmData.getKeyByLocation(location);
+
+                val originTileContent = originDmmData.getTileContentByLocation(location);
+                val localTileContent = localDmmData.getTileContentByLocation(location);
+                val remoteTileContent = remoteDmmData.getTileContentByLocation(location);
+
+                val originMatchesLocal = compareTileContents(originTileContent, localTileContent);
+                val originMatchesRemote = compareTileContents(originTileContent, remoteTileContent);
+                val remoteMatchesLocal = compareTileContents(remoteTileContent, localTileContent);
+
+                String key = null;
+                TileContent tileContent = null;
+
+                if (!originMatchesLocal && !originMatchesRemote && !remoteMatchesLocal) {
+                    System.out.println("==== CONFLICT ====\n"
+                            + "X: " + x + " Y: " + y + "\n"
+                            + "--- Local\n"
+                            + "Key: " + localKey + '\n'
+                            + "Content: " + localTileContent + '\n'
+                            + "--- Remote\n"
+                            + "Key: " + remoteKey + '\n'
+                            + "Content: " + remoteTileContent
+                    );
+
+                    switch (readResolveMode()) {
+                        case 1:
+                            key = localKey;
+                            tileContent = localTileContent;
+                            System.out.println("Local version is used");
+                            break;
+                        case 2:
+                            key = remoteKey;
+                            tileContent = remoteTileContent;
+                            System.out.println("Remote version is used");
+                            break;
+                        case 0:
+                            System.out.println("Aborted by user");
+                            System.exit(2);
+                        default:
+                            System.out.println("ERROR: Incorrect conflict resolution mode. Aborting!");
+                            System.exit(1);
+                    }
+                } else if (!originMatchesLocal) {
+                    key = localKey;
+                    tileContent = localTileContent;
+                } else {
+                    key = remoteKey;
+                    tileContent = remoteTileContent;
+                }
+
+                resultDmmData.addTileContentByLocation(location, tileContent);
+
+                if (resultDmmData.hasTileContentByKey(key) && !resultDmmData.hasKeyByTileContent(tileContent)) {
+                    contentWithoutKeys.add(tileContent);
+                } else {
+                    resultDmmData.addKeyAndTileContent(key, tileContent);
+                }
+            }
+        }
+    }
+
+    private void spreadContentWithoutKeys() {
+        if (contentWithoutKeys.isEmpty()) {
+            return;
+        }
+        val keyGenerator = new KeyGenerator(resultDmmData);
+        contentWithoutKeys.forEach(tileContent -> resultDmmData.addKeyAndTileContent(keyGenerator.createKey(), tileContent));
+    }
+
     private boolean compareTileContents(final TileContent tc1, final TileContent tc2) {
         return tc1 == null ? tc2 == null : tc1.equals(tc2);
     }
 
     private int readResolveMode() {
-        System.out.println(
-                "Please select number of version which should be used:"
-              + "\n 1 - local\n 2 - remote\n 0 - abort"
-        );
-
+        System.out.println("Please select number of version which should be used:\n 1 - local\n 2 - remote\n 0 - abort");
         while (true) {
             try {
                 System.out.print(">> ");
