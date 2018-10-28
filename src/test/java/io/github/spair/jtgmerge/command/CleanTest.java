@@ -1,5 +1,8 @@
 package io.github.spair.jtgmerge.command;
 
+import io.github.spair.jtgmerge.AssertUtil;
+import io.github.spair.jtgmerge.FieldUtil;
+import io.github.spair.jtgmerge.ResourceUtil;
 import org.junit.Before;
 import org.junit.Test;
 

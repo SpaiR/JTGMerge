@@ -1,12 +1,13 @@
 package io.github.spair.jtgmerge.command;
 
+import io.github.spair.jtgmerge.AssertUtil;
+import io.github.spair.jtgmerge.FieldUtil;
+import io.github.spair.jtgmerge.ResourceUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
-
-import static org.junit.Assert.*;
 
 public class ConvertTest {
 

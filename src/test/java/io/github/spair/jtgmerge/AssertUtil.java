@@ -1,4 +1,4 @@
-package io.github.spair.jtgmerge.command;
+package io.github.spair.jtgmerge;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;

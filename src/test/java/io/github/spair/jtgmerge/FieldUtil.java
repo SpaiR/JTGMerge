@@ -1,4 +1,4 @@
-package io.github.spair.jtgmerge.command;
+package io.github.spair.jtgmerge;
 
 import java.lang.reflect.Field;
 
