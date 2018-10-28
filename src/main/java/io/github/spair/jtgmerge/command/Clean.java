@@ -27,7 +27,7 @@ public class Clean implements Runnable {
 
     @Parameters(
             index = "2", paramLabel = "OUTPUT",
-            description = "file to output result (if not provided @|yellow MODIFIED|@ is used)",
+            description = "file to output result (if not provided @|yellow MODIFIED|@ will be used)",
             arity = "0..1")
     private File output;
 
@@ -58,7 +58,7 @@ public class Clean implements Runnable {
 
     @Override
     public void run() {
-        System.out.printf("Cleaning map '%s', tgm format is %s\n", modified.getName(), tgm ? "enabled" : "disabled");
+        System.out.printf("Cleaning map '%s', tgm format %s\n", modified.getName(), tgm ? "enabled" : "disabled");
 
         if (output == null) {
             output = modified;
