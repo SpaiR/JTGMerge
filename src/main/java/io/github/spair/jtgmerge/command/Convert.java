@@ -38,6 +38,9 @@ public class Convert implements Runnable {
             DmmWriter.saveAsTGM(mapFile, dmmData);
         } else if (BYOND.equalsIgnoreCase(format)) {
             DmmWriter.saveAsByond(mapFile, dmmData);
+        } else {
+            System.out.println("ERROR: Unknown format");
+            System.exit(1);
         }
 
         System.out.printf("Map '%s' successfully converted to '%s'\n", mapFile.getName(), format);
