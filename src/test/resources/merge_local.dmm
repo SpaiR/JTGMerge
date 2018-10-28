@@ -1,0 +1,26 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"a" = (
+/turf/floor{
+	icon_state = "floor";
+	step_x = 1
+	},
+/area/pod)
+"b" = (
+/area/pod)
+"c" = (
+/area/pod1)
+"d" = (
+/area/pod3)
+
+(1,1,1) = {"
+a
+a
+"}
+(2,1,1) = {"
+b
+b
+"}
+(3,1,1) = {"
+c
+d
+"}

@@ -1,0 +1,7 @@
+"a" = (/turf/floor{icon_state = "floor"; step_x = 1},/area/pod)
+"b" = (/turf/floor{dir = 4; icon_state = "floor"},/area/pod)
+
+(1,1,1) = {"
+ab
+ab
+"}

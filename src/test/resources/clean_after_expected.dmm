@@ -1,0 +1,16 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"b" = (
+/turf/floor{
+	dir = 4;
+	icon_state = "floor"
+	},
+/area/pod)
+
+(1,1,1) = {"
+b
+b
+"}
+(2,1,1) = {"
+b
+b
+"}
