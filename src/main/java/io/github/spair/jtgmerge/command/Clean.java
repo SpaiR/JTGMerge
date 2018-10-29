@@ -4,8 +4,10 @@ import io.github.spair.dmm.io.DmmData;
 import io.github.spair.dmm.io.TileLocation;
 import io.github.spair.dmm.io.reader.DmmReader;
 import io.github.spair.dmm.io.writer.DmmWriter;
+import io.github.spair.jtgmerge.util.FileUtil;
 import io.github.spair.jtgmerge.util.KeyGenerator;
 import lombok.val;
+import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
@@ -43,6 +45,9 @@ public class Clean implements Runnable {
             description = "variables to remove from every object on the map",
             arity = "0..*")
     private String[] sanitizeVars = {};
+
+    @Mixin
+    private SeparatorOption separatorOption = new SeparatorOption();
 
     private DmmData originalDmmData;
     private DmmData modifiedDmmData;
@@ -82,6 +87,8 @@ public class Clean implements Runnable {
         } else {
             DmmWriter.saveAsByond(output, outputDmmData);
         }
+
+        FileUtil.convertLineEndings(output, separatorOption.separator);
 
         System.out.printf("Map '%s' successfully cleaned, output path: '%s'\n", modified.getName(), output.getPath());
     }

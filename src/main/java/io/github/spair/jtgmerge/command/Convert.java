@@ -2,8 +2,10 @@ package io.github.spair.jtgmerge.command;
 
 import io.github.spair.dmm.io.reader.DmmReader;
 import io.github.spair.dmm.io.writer.DmmWriter;
+import io.github.spair.jtgmerge.util.FileUtil;
 import lombok.val;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
@@ -24,6 +26,9 @@ public class Convert implements Runnable {
     @Option(names = {"-f", "--format"}, description = "format to convert to (accepts 'tgm' or 'byond' as value)")
     private String format;
 
+    @Mixin
+    private SeparatorOption separatorOption = new SeparatorOption();
+
     @Override
     public void run() {
         val dmmData = DmmReader.readMap(mapFile);
@@ -42,6 +47,8 @@ public class Convert implements Runnable {
             System.out.println("ERROR: Unknown format");
             System.exit(1);
         }
+
+        FileUtil.convertLineEndings(mapFile, separatorOption.separator);
 
         System.out.printf("Map '%s' successfully converted to '%s'\n", mapFile.getName(), format);
     }

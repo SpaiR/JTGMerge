@@ -5,9 +5,11 @@ import io.github.spair.dmm.io.TileContent;
 import io.github.spair.dmm.io.TileLocation;
 import io.github.spair.dmm.io.reader.DmmReader;
 import io.github.spair.dmm.io.writer.DmmWriter;
+import io.github.spair.jtgmerge.util.FileUtil;
 import io.github.spair.jtgmerge.util.KeyGenerator;
 import lombok.val;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Parameters;
 
 import java.io.File;
@@ -30,6 +32,9 @@ public class Merge implements Runnable {
 
     @Parameters(index = "2", paramLabel = "REMOTE", description = "file with remote map (map from remote brunch)")
     private File remote;
+
+    @Mixin
+    private SeparatorOption separatorOption = new SeparatorOption();
 
     private DmmData originDmmData;
     private DmmData localDmmData;
@@ -66,6 +71,8 @@ public class Merge implements Runnable {
         } else {
             DmmWriter.saveAsByond(local, resultDmmData);
         }
+
+        FileUtil.convertLineEndings(local, separatorOption.separator);
 
         System.out.println("Map merging successfully finished");
     }
