@@ -16,7 +16,7 @@ import static picocli.CommandLine.Command;
         description =
                 "CLI-based app for .dmm files which vastly improves mapping experience.%n"
               + "Able to work with BYOND format as well as with TGM.",
-        version = {"JTGMerge @|yellow v1.1|@\t(c) 2018, SpaiR", "Code is licensed under a MIT-style license"},
+        version = {"JTGMerge @|yellow v1.2|@\t(c) 2018, SpaiR", "Code is licensed under a MIT-style license"},
         subcommands = {Clean.class, Convert.class, Merge.class},
         mixinStandardHelpOptions = true)
 public class JTGMerge implements Runnable {
