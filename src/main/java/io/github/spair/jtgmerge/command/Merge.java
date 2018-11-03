@@ -7,16 +7,20 @@ import io.github.spair.dmm.io.reader.DmmReader;
 import io.github.spair.dmm.io.writer.DmmWriter;
 import io.github.spair.jtgmerge.util.FileUtil;
 import io.github.spair.jtgmerge.util.KeyGenerator;
+import lombok.AllArgsConstructor;
 import lombok.val;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Parameters;
 
 import java.io.File;
-import java.util.HashSet;
-import java.util.InputMismatchException;
-import java.util.Scanner;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Set;
+import java.util.HashSet;
+import java.util.Scanner;
+import java.util.InputMismatchException;
+import java.util.function.Consumer;
 
 @Command(
         name = "merge",
@@ -101,6 +105,9 @@ public class Merge implements Runnable {
     }
 
     private void fillMapWithContent() {
+        List<Change> remoteChanges = new ArrayList<>();
+        List<Change> localChanges = new ArrayList<>();
+
         for (int x = 1; x <= originDmmData.getMaxX(); x++) {
             for (int y = 1; y <= originDmmData.getMaxY(); y++) {
                 val location = TileLocation.of(x, y);
@@ -116,9 +123,6 @@ public class Merge implements Runnable {
                 val originMatchesRemote = compareTileContents(originTileContent, remoteTileContent);
                 val remoteMatchesLocal = compareTileContents(remoteTileContent, localTileContent);
 
-                String key = null;
-                TileContent tileContent = null;
-
                 if (!originMatchesLocal && !originMatchesRemote && !remoteMatchesLocal) {
                     System.out.println("==== CONFLICT ====\n"
                             + "X: " + x + " Y: " + y + "\n"
@@ -132,13 +136,11 @@ public class Merge implements Runnable {
 
                     switch (readResolveMode()) {
                         case 1:
-                            key = localKey;
-                            tileContent = localTileContent;
+                            localChanges.add(new Change(location, localKey, localTileContent));
                             System.out.println("Local version is used");
                             break;
                         case 2:
-                            key = remoteKey;
-                            tileContent = remoteTileContent;
+                            remoteChanges.add(new Change(location, remoteKey, remoteTileContent));
                             System.out.println("Remote version is used");
                             break;
                         case 0:
@@ -148,23 +150,27 @@ public class Merge implements Runnable {
                             System.out.println("ERROR: Incorrect conflict resolution mode. Aborting!");
                             System.exit(1);
                     }
-                } else if (!originMatchesLocal) {
-                    key = localKey;
-                    tileContent = localTileContent;
                 } else {
-                    key = remoteKey;
-                    tileContent = remoteTileContent;
-                }
-
-                resultDmmData.addTileContentByLocation(location, tileContent);
-
-                if (resultDmmData.hasTileContentByKey(key) && !resultDmmData.hasKeyByTileContent(tileContent)) {
-                    contentWithoutKeys.add(tileContent);
-                } else {
-                    resultDmmData.addKeyAndTileContent(key, tileContent);
+                    if (!originMatchesLocal) {
+                        localChanges.add(new Change(location, localKey, localTileContent));
+                    } else {
+                        remoteChanges.add(new Change(location, remoteKey, remoteTileContent));
+                    }
                 }
             }
         }
+
+        Consumer<Change> addToResultDmm = change -> {
+            resultDmmData.addTileContentByLocation(change.location, change.content);
+            if (resultDmmData.hasTileContentByKey(change.key) && !resultDmmData.hasKeyByTileContent(change.content)) {
+                contentWithoutKeys.add(change.content);
+            } else {
+                resultDmmData.addKeyAndTileContent(change.key, change.content);
+            }
+        };
+
+        remoteChanges.forEach(addToResultDmm);
+        localChanges.forEach(addToResultDmm);
     }
 
     private void spreadContentWithoutKeys() {
@@ -188,5 +194,12 @@ public class Merge implements Runnable {
             } catch (InputMismatchException ignored) {
             }
         }
+    }
+
+    @AllArgsConstructor
+    private static final class Change {
+        private final TileLocation location;
+        private final String key;
+        private final TileContent content;
     }
 }
