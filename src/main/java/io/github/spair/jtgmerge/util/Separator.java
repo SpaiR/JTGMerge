@@ -10,7 +10,7 @@ public enum Separator {
 
     private final String separatorChars;
 
-    public String separator() {
+    public String separatorChar() {
         return separatorChars;
     }
 }

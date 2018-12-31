@@ -5,17 +5,16 @@ import io.github.spair.dmm.io.TileLocation;
 import io.github.spair.dmm.io.reader.DmmReader;
 import io.github.spair.jtgmerge.util.FileUtil;
 import io.github.spair.jtgmerge.util.KeyGenerator;
+import io.github.spair.jtgmerge.util.Separator;
 import lombok.val;
-import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
+import picocli.CommandLine.Command;
 
 import java.io.File;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Arrays;
-
-import static picocli.CommandLine.Command;
 
 @Command(name = "clean", description = "Cleans a map after changes have been made.")
 @SuppressWarnings({"FieldCanBeLocal", "unused", "MismatchedReadAndWriteOfArray"})
@@ -45,8 +44,8 @@ public class Clean implements Runnable {
             arity = "0..*")
     private String[] sanitizeVars = {};
 
-    @Mixin
-    private SeparatorOption separatorOption = new SeparatorOption();
+    @Option(names = {"--separator"}, description = "Separator to split lines. Accepts: ${COMPLETION-CANDIDATES}")
+    private Separator separator = null;
 
     private DmmData originalDmmData;
     private DmmData modifiedDmmData;
@@ -87,7 +86,7 @@ public class Clean implements Runnable {
             outputDmmData.saveAsByond(output);
         }
 
-        FileUtil.convertLineEndings(output, separatorOption.separator);
+        FileUtil.convertLineEndings(output, separator);
 
         System.out.printf("Map '%s' successfully cleaned, output path: '%s'\n", modified.getName(), output.getPath());
     }

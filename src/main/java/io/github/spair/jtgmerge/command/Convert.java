@@ -2,9 +2,9 @@ package io.github.spair.jtgmerge.command;
 
 import io.github.spair.dmm.io.reader.DmmReader;
 import io.github.spair.jtgmerge.util.FileUtil;
+import io.github.spair.jtgmerge.util.Separator;
 import lombok.val;
 import picocli.CommandLine.Command;
-import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
@@ -25,8 +25,8 @@ public class Convert implements Runnable {
     @Option(names = {"-f", "--format"}, description = "format to convert to (accepts 'tgm' or 'byond' as value)")
     private String format;
 
-    @Mixin
-    private SeparatorOption separatorOption = new SeparatorOption();
+    @Option(names = {"--separator"}, description = "Separator to split lines. Accepts: ${COMPLETION-CANDIDATES}")
+    private Separator separator = null;
 
     @Override
     public void run() {
@@ -47,7 +47,7 @@ public class Convert implements Runnable {
             System.exit(1);
         }
 
-        FileUtil.convertLineEndings(mapFile, separatorOption.separator);
+        FileUtil.convertLineEndings(mapFile, separator);
 
         System.out.printf("Map '%s' successfully converted to '%s'\n", mapFile.getName(), format);
     }

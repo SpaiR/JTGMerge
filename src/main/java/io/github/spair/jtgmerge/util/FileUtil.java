@@ -15,7 +15,7 @@ public final class FileUtil {
 
         try {
             String fileContent = new String(Files.readAllBytes(file.toPath()));
-            fileContent = fileContent.replace(System.lineSeparator(), separator.separator());
+            fileContent = fileContent.replace(System.lineSeparator(), separator.separatorChar());
             Files.write(file.toPath(), fileContent.getBytes(), StandardOpenOption.TRUNCATE_EXISTING);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
