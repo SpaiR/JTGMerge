@@ -113,6 +113,7 @@
                         </manifest>
                         <manifestEntries>
                             <Built-By>${user.name}</Built-By>
+                            <License>MIT License</License>
                         </manifestEntries>
                     </archive>
                 </configuration>
