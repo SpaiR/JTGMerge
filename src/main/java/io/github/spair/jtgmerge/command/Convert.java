@@ -1,7 +1,6 @@
 package io.github.spair.jtgmerge.command;
 
 import io.github.spair.dmm.io.reader.DmmReader;
-import io.github.spair.dmm.io.writer.DmmWriter;
 import io.github.spair.jtgmerge.util.FileUtil;
 import lombok.val;
 import picocli.CommandLine.Command;
@@ -40,9 +39,9 @@ public class Convert implements Runnable {
         System.out.printf("Converting '%s' to '%s'\n", mapFile.getName(), format);
 
         if (TGM.equalsIgnoreCase(format)) {
-            DmmWriter.saveAsTGM(mapFile, dmmData);
+            dmmData.saveAsTGM(mapFile);
         } else if (BYOND.equalsIgnoreCase(format)) {
-            DmmWriter.saveAsByond(mapFile, dmmData);
+            dmmData.saveAsByond(mapFile);
         } else {
             System.out.println("ERROR: Unknown format");
             System.exit(1);

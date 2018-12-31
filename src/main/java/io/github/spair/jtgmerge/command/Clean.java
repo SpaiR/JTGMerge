@@ -3,7 +3,6 @@ package io.github.spair.jtgmerge.command;
 import io.github.spair.dmm.io.DmmData;
 import io.github.spair.dmm.io.TileLocation;
 import io.github.spair.dmm.io.reader.DmmReader;
-import io.github.spair.dmm.io.writer.DmmWriter;
 import io.github.spair.jtgmerge.util.FileUtil;
 import io.github.spair.jtgmerge.util.KeyGenerator;
 import lombok.val;
@@ -83,9 +82,9 @@ public class Clean implements Runnable {
         fillRemainingTiles();
 
         if (tgm) {
-            DmmWriter.saveAsTGM(output, outputDmmData);
+            outputDmmData.saveAsTGM(output);
         } else {
-            DmmWriter.saveAsByond(output, outputDmmData);
+            outputDmmData.saveAsByond(output);
         }
 
         FileUtil.convertLineEndings(output, separatorOption.separator);

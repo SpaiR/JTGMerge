@@ -4,7 +4,6 @@ import io.github.spair.dmm.io.DmmData;
 import io.github.spair.dmm.io.TileContent;
 import io.github.spair.dmm.io.TileLocation;
 import io.github.spair.dmm.io.reader.DmmReader;
-import io.github.spair.dmm.io.writer.DmmWriter;
 import io.github.spair.jtgmerge.util.FileUtil;
 import io.github.spair.jtgmerge.util.KeyGenerator;
 import lombok.AllArgsConstructor;
@@ -20,6 +19,7 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.Scanner;
 import java.util.InputMismatchException;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 @Command(
@@ -71,9 +71,9 @@ public class Merge implements Runnable {
         spreadContentWithoutKeys();
 
         if (resultDmmData.isTgm()) {
-            DmmWriter.saveAsTGM(local, resultDmmData);
+            resultDmmData.saveAsTGM(local);
         } else {
-            DmmWriter.saveAsByond(local, resultDmmData);
+            resultDmmData.saveAsByond(local);
         }
 
         FileUtil.convertLineEndings(local, separatorOption.separator);
@@ -182,7 +182,7 @@ public class Merge implements Runnable {
     }
 
     private boolean compareTileContents(final TileContent tc1, final TileContent tc2) {
-        return tc1 == null ? tc2 == null : tc1.equals(tc2);
+        return Objects.equals(tc1, tc2);
     }
 
     private int readResolveMode() {
