@@ -21,7 +21,8 @@ but unlike it JTGMerge is able to properly work with `TGM` format and has number
 
 Other features are mostly migrated from JMerge:
 - Map cleaning, so map changes made by DreamEditor will be minimized in final diff.
-- Interactive conflict resolver. It fully works, but has one unresolved problem.
+- Map merging. Until maps doesn't have tiles with different content, they are fully mergeable. Keys conflict doesn't matter, since in that case additional keys will be created.
+- Interactive conflict resolver. Helps in case when maps can't be merged automatically. It fully works, but has one unresolved problem.
   For some reason while rebasing console process doesn't provide input stream, so user is unable to make choice which version should be used.
   Quick fix for this problem is to start JTGMerge in separate terminal or don't use `git rebase` if you are sure that conflict will occur.
   
